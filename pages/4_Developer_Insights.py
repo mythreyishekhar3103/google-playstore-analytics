@@ -1,46 +1,6 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
+# Use Category instead of Developer
+developer_col = "Category"
 
-st.set_page_config(
-    page_title="Developer Insights",
-    page_icon="👨‍💻",
-    layout="wide"
-)
-
-st.title("👨‍💻 Developer Insights")
-
-# Load dataset
-df = pd.read_csv("data/googleplaystore.csv")
-
-# Clean column names
-df.columns = df.columns.str.strip()
-
-# Possible developer columns
-developer_col = None
-
-possible_columns = [
-    "Developer Id",
-    "Developer Name",
-    "Developer",
-    "Developer Email"
-]
-
-for col in possible_columns:
-    if col in df.columns:
-        developer_col = col
-        break
-
-# If no developer column exists
-if developer_col is None:
-    st.error("No developer-related column found in dataset.")
-
-    st.subheader("Available Columns")
-    st.write(df.columns.tolist())
-
-    st.stop()
-
-# Top developers
 developers = (
     df.groupby(developer_col)
       .size()
@@ -56,12 +16,12 @@ developers = (
 col1, col2 = st.columns(2)
 
 col1.metric(
-    "Total Developers",
+    "Total Categories",
     developers[developer_col].nunique()
 )
 
 col2.metric(
-    "Top 20 Developers",
+    "Top Categories",
     len(developers)
 )
 
@@ -70,7 +30,7 @@ fig = px.bar(
     developers,
     x=developer_col,
     y="App Count",
-    title="Top Developers by App Count"
+    title="Top Categories by App Count"
 )
 
 st.plotly_chart(
@@ -79,7 +39,7 @@ st.plotly_chart(
 )
 
 # Data Table
-st.subheader("Developer Statistics")
+st.subheader("Category Statistics")
 
 st.dataframe(
     developers,

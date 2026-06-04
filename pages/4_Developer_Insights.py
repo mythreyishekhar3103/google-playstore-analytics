@@ -11,7 +11,7 @@ st.set_page_config(
 st.title("👨‍💻 Developer Insights")
 
 # Load dataset
-df = pd.read_csv("data/Google-Playstore.csv")
+df = pd.read_csv("data/googleplaystore.csv")
 
 # Clean column names
 df.columns = df.columns.str.strip()

@@ -2,6 +2,22 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+st.markdown("""
+<style>
+
+.main{
+background-color:#f5f7fa;
+}
+
+[data-testid="metric-container"]{
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0px 2px 10px rgba(0,0,0,0.1);
+}
+
+</style>
+""", unsafe_allow_html=True)
 st.set_page_config(
     page_title="Google Play Store Analytics",
     page_icon="📱",

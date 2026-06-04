@@ -1,1 +1,51 @@
+import pandas as pd
+import pickle
 
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+
+# Load dataset
+df = pd.read_csv("data/googleplaystore.csv")
+
+# Remove rows with missing ratings
+df = df.dropna(subset=["Rating"])
+
+# Create target column
+df["High_Rated"] = (df["Rating"] >= 4.0).astype(int)
+
+# Encode category
+le = LabelEncoder()
+df["Category"] = le.fit_transform(df["Category"].astype(str))
+
+# Features
+X = df[["Category"]]
+
+# Target
+y = df["High_Rated"]
+
+# Train/Test Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+# Train Model
+model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
+
+model.fit(X_train, y_train)
+
+# Save model.pkl
+with open("model.pkl", "wb") as f:
+    pickle.dump(model, f)
+
+# Save label_encoder.pkl
+with open("label_encoder.pkl", "wb") as f:
+    pickle.dump(le, f)
+
+print("model.pkl created successfully")

@@ -26,7 +26,7 @@ st.set_page_config(
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/Google-Playstore.csv")
+    df = pd.read_csv("data/googleplaystore.csv")
 
     df["Rating"] = pd.to_numeric(df["Rating"], errors="coerce")
     df["Maximum Installs"] = pd.to_numeric(

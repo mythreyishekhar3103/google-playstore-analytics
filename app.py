@@ -1,3 +1,7 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
 st.markdown("""
 <style>
 
@@ -15,9 +19,6 @@ box-shadow:0px 2px 10px rgba(0,0,0,0.1);
 </style>
 """, unsafe_allow_html=True)
 
-import streamlit as st
-import pandas as pd
-import plotly.express as px
 
 st.set_page_config(
     page_title="Google Play Store Analytics",

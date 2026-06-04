@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-df = pd.read_csv("data/Google-Playstore.csv")
+df = pd.read_csv("data/googleplaystore.csv")
 
 st.title("🤖 Smart Insights")
 

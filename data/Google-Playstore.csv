@@ -1,85 +1,58 @@
-isolation provided - movie ticket -- failed 
+# ==========================================
+# 1. EXPLODE ARRAY COLUMN
+# ==========================================
 
-atomicty - final result 
+from pyspark.sql.functions import explode, col
 
-copy into autoloader  - sql
+df_new = df.select(
+    col("Name"),
+    explode(col("fruits")).alias("fruit")
+)
 
-liquid cluster
+# ==========================================
+# 2. EMPLOYEE - MANAGER SELF JOIN
+# ==========================================
 
-partition pruning 
+employee_manager = (
+    emp_table.alias("a")
+    .join(
+        emp_table.alias("b"),
+        col("a.manager_id") == col("b.emp_id"),
+        "left"
+    )
+    .select(
+        col("a.emp_id"),
+        col("a.name"),
+        col("b.name").alias("manager_name")
+    )
+)
 
-hive metarore - tables
+# SQL Version
 
-liquid clustering 
+"""
+SELECT
+    a.emp_id,
+    a.name,
+    b.name AS manager_name
+FROM emp_table a
+LEFT JOIN emp_table b
+ON a.manager_id = b.emp_id;
+"""
 
-AQE
+# ==========================================
+# 3. DISTINCT MOBILE COUNT FOR EACH USER
+# ==========================================
 
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import (
+    split,
+    explode,
+    countDistinct,
+    col
+)
 
-CTC DETAILS
-Current CTC Salary Drawn
+spark = SparkSession.builder.getOrCreate()
 
-CTC *
-734133
-Gross Salary *
-606722
-Variable/Bonus
-63449
-Last Appraisal
-01-Jun-2025
-cancel
-Expected CTC
-
-Expected CTC *
-
-
- ------------------------------------------------
-Name	fruits
-John	["apple", "banana", "orange"]
-Alice	["grape", "berry"]
-Bob	["melon", "peach", "kiwi"]
- 
- 
- 
-name	fruit
-John	apple
-John	banana
-John	orange
-Alice	grape
-Alice	berry
-Bob	melon
-Bob	peach
-Bob	kiwi
- 
- 
-
-df = df.select(name ,explode(fruits))
-
--------------------------------------------------------------
-
-25 20
-
-select table.id from table1 left join table2 on table.id = table2.id 
-
-------------------------------------------------------------------
-
-
-101  Srujan(Ashok)
-
-begin trans and commit trans -- tbd
-----------------------------------------------------
-biding
----------------------------------
-emp_id,name,manager_id
-
-123 Rohit 345
-
-
-select a.empid ,a.name,b.name as manager_name from emp_table a join emp_table b on a.emp_id = b.manager_id 
-
-
---and a.emp_id!= b.emp_id
-
- -----------------------------------------
 data = [
     ("user1", "9999999991:888888882"),
     ("user3", "7777777771"),
@@ -88,40 +61,223 @@ data = [
     ("user1", "9999999991:9994433777")
 ]
 
+df = spark.createDataFrame(
+    data,
+    ["username", "mobile_number"]
+)
 
+df = df.withColumn(
+    "mobile_number",
+    explode(
+        split(
+            col("mobile_number"),
+            ":"
+        )
+    )
+)
 
-We need to find out count of distinct mobile number for each user.
-Write Spark Program to generate below output:
-username, mobile_count
-user1, 3
-user5, 3
-user2, 2
-user3, 1
+result = (
+    df.groupBy("username")
+      .agg(
+          countDistinct("mobile_number")
+          .alias("mobile_count")
+      )
+)
 
+result.show()
 
-df = df.withColumn("mobile_number" , explode(split(mobile_number,':")))
+# Expected Output
 
-df = df.withColumn("mobile_counts" , set_collect(mobile_numbers))
-df = df.withColumn("mobile_count" , len(mobile_counts))
+"""
++--------+------------+
+|username|mobile_count|
++--------+------------+
+|user1   |3           |
+|user2   |2           |
+|user3   |1           |
+|user5   |3           |
++--------+------------+
+"""
 
+# ==========================================
+# 4. ZIP TWO LISTS
+# ==========================================
 
-df = df.distinct[[username,mobile_number]
-df = df.withColumn("count", agg(count(mobile_number)).groupBy(user_name))
-
-
--------------------------------
 l1 = ["a", "b"]
 l2 = [1, 2]
 
-[('a', 1), ('b', 2)]
+new_list = []
 
-------------------------------
-
-new_list=[]
 for i in range(len(l1)):
-	new_list.append((l1[i],l2[i]))
-	
+    new_list.append((l1[i], l2[i]))
 
-		
-	
- 
+print(new_list)
+
+# Better Approach
+
+result = list(zip(l1, l2))
+
+print(result)
+
+# Output
+# [('a', 1), ('b', 2)]
+
+# ==========================================
+# 5. TRANSACTION EXAMPLE
+# ==========================================
+
+"""
+BEGIN TRANSACTION;
+
+UPDATE employee
+SET salary = salary + 1000
+WHERE emp_id = 101;
+
+COMMIT;
+
+-- In case of failure
+
+ROLLBACK;
+"""
+
+# ==========================================
+# 6. COPY INTO
+# ==========================================
+
+"""
+COPY INTO sales_table
+FROM '/mnt/input/'
+FILEFORMAT = CSV;
+"""
+
+# ==========================================
+# 7. AUTO LOADER
+# ==========================================
+
+df = (
+    spark.readStream
+         .format("cloudFiles")
+         .option("cloudFiles.format", "csv")
+         .load("/mnt/input/")
+)
+
+(
+    df.writeStream
+      .format("delta")
+      .option(
+          "checkpointLocation",
+          "/mnt/checkpoint"
+      )
+      .start("/mnt/output")
+)
+
+# ==========================================
+# 8. PARTITION PRUNING
+# ==========================================
+
+"""
+SELECT *
+FROM sales
+WHERE year = 2025;
+"""
+
+# ==========================================
+# 9. HIVE METASTORE
+# ==========================================
+
+"""
+Stores:
+- Database metadata
+- Table metadata
+- Schema information
+- Partition information
+- File locations
+
+Does NOT store actual data
+"""
+
+# ==========================================
+# 10. LIQUID CLUSTERING
+# ==========================================
+
+"""
+CREATE TABLE sales
+(
+    id INT,
+    amount DOUBLE
+)
+USING DELTA
+CLUSTER BY (id);
+"""
+
+# ==========================================
+# 11. AQE (ADAPTIVE QUERY EXECUTION)
+# ==========================================
+
+spark.conf.set(
+    "spark.sql.adaptive.enabled",
+    "true"
+)
+
+# ==========================================
+# 12. LEFT JOIN EXAMPLE
+# ==========================================
+
+"""
+SELECT table1.id
+FROM table1
+LEFT JOIN table2
+ON table1.id = table2.id;
+"""
+
+# Returns all records from table1
+
+# ==========================================
+# 13. ACID PROPERTIES
+# ==========================================
+
+"""
+Atomicity:
+All operations succeed or none.
+
+Consistency:
+Database remains valid before and after transaction.
+
+Isolation:
+Transactions do not interfere with each other.
+
+Durability:
+Committed data survives failures.
+"""
+
+# ==========================================
+# 14. MOVIE TICKET BOOKING EXAMPLE
+# ==========================================
+
+"""
+Atomicity:
+Seat booking + payment succeed together.
+
+Isolation:
+Two users cannot book the same seat simultaneously.
+
+Consistency:
+Seat count remains accurate.
+
+Durability:
+Booking remains saved after commit.
+"""
+
+# ==========================================
+# 15. CTC DETAILS
+# ==========================================
+
+"""
+Current CTC      : 7.34 LPA
+Gross Salary     : 6.06 LPA
+Variable Bonus   : 0.63 LPA
+
+Expected CTC:
+10 LPA - 12 LPA
+(depending on skills and market demand)
+"""

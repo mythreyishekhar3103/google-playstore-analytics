@@ -6,7 +6,7 @@ st.set_page_config(layout="wide")
 
 st.title("📊 Google Play Store Overview")
 
-df = pd.read_csv("data/Google-Playstore.csv")
+df = pd.read_csv("data/googleplaystore.csv")
 
 col1, col2, col3 = st.columns(3)
 

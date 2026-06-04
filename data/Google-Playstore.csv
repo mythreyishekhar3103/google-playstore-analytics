@@ -3,7 +3,6 @@
 # ==========================================
 
 from pyspark.sql.functions import explode, col
-
 df_new = df.select(
     col("Name"),
     explode(col("fruits")).alias("fruit")

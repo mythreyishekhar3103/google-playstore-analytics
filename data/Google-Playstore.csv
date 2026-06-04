@@ -1,7 +1,6 @@
 # ==========================================
 # 1. EXPLODE ARRAY COLUMN
 # ==========================================
-
 from pyspark.sql.functions import explode, col
 
 df_new = df.select(

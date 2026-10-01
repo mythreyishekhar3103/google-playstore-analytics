@@ -10,11 +10,17 @@ An interactive Streamlit dashboard built using:
 Features:
 
 ✔ Category Analysis
+
 ✔ Rating Analysis
+
 ✔ Developer Insights
+
 ✔ KPI Cards
+
 ✔ Interactive Filters
+
 ✔ AI Generated Insights
+
 ✔ Beautiful Dashboard UI
 
 Dataset:
